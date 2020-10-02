@@ -18,12 +18,6 @@
 
     <link rel="stylesheet" type="text/css" href="<?php echo base_url(); ?>/datetime/jquery.datetimepicker.min.css"/>
 
-    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.2/css/all.css" integrity="sha384-oS3vJWv+0UjzBfQzYUhtDYW+Pj2yciDJxpsK1OYPAYjqT085Qq/1cq5FLXAZQ7Ay" crossorigin="anonymous">
-
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-datetimepicker/2.5.4/jquery.datetimepicker.full.min.js"></script>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/jquery-datetimepicker/2.5.4/build/jquery.datetimepicker.min.css" rel="stylesheet"/>
-
     <style>
         .datos{
             color: gray;
@@ -54,7 +48,7 @@
                 <div class="card-body">
                     <div class="form-group row">
                         <div class="col-md-12">
-                            <h5>Para generar el reporte de alumnos con dictamen, por favor seleccione la fecha inicial y final, y a continuación de clic en el botón Generar Reporte</h5><br>
+                            <h5>Para generar el reporte de alumnos con dictamen, por favor seleccione la fecha inicial y final, y a continuación de clic en el botón CSV</h5><br>
                         </div>
 
                         <div class="col-md-5">
@@ -82,14 +76,14 @@
                         <div class="col-md-2">
                         </div>
                         <div class="col-md-5">
-                            <!--<label  class="datos"><em>Estatus del Cotejo de documentos:</em></label>
-                            <select id="estatusCot" class="form-control">
+                            <label  class="datos"><em>Usuario Información:</em></label>
+                            <select id="usuarioInfo" class="form-control">
                                 <option>-- Seleccione una opción --</option>
                                 <?php 
-                                foreach ($estatusCotejoDoc as $key):?>
-                                    <option><?php echo $key['descripcion']; ?></option>
+                                foreach ($usuariosModel as $key):?>
+                                    <option value="<?php echo $key['id']; ?>"><?php echo $key['usuario']; ?></option>
                                 <?php endforeach; ?>
-                            </select> -->
+                            </select>
                         </div>
                     </div>
                     <div class="form-group row">
@@ -105,12 +99,24 @@
                     </div>
                     <div class="col-md-2">
                     </div>
+                    <div class="col-md-5">
+                        <label class="datos"><em>Usuario Documentos:</em></label>
+                           <select id="usuarioDoc" class="form-control">
+                            <option>-- Seleccione una opción --</option>
+                            <?php 
+                                foreach ($usuariosModel as $key):?>
+                                    <option><?php echo $key['usuario']; ?></option>
+                                <?php endforeach; ?>
+                        </select>
+                    </div>
+
+                    <div class="col-md-7">
+                    </div>
                     <div class="col-md-5" style="padding-top: 30px; text-align: right;">
                         <input style="width: 150px" type="submit" class="btn btn-primary"  id="Buscar" onclick="buscar()" value="Buscar">
-                    </div>
                     
-                </div>
-                <br><br><br>
+                    </div>
+                <br><br><br><br><br>
 
                 <!--Ejemplo tabla con DataTables-->
                 <div class="form-group row">
@@ -119,15 +125,17 @@
                             <table id="example" class="table" style="width:100%">
                                 <thead >
                                     <tr>
-                                        <td><b>Id</b></td>
-                                        <td><b>Nombres</b></td>
-                                        <td><b>Matricula</b></td>
-                                        <td><b>Curp</b></td>
-                                        <td><b>Correo</b></td>
-                                        <td><b>Fecha de Registro</b></td>
-                                        <td><b>Estatus Alumno</b></td>
-                                        <td><b>Estatus de Informacion</b></td>
-                                        <td><b>Estatus Documentos</b></td>
+                                        <td class="filas"><b>Id</b></td>
+                                        <td class="filas"><b>Nombres</b></td>
+                                        <td class="filas"><b>Matricula</b></td>
+                                        <td class="filas"><b>Curp</b></td>
+                                        <td class="filas"><b>Correo</b></td>
+                                        <td class="filas"><b>Fecha de Registro</b></td>
+                                        <td class="filas"><b>Estatus Alumno</b></td>
+                                        <td class="filas"><b>Estatus de Informacion</b></td>
+                                        <td class="filas"><b>Estatus Documentos</b></td>
+                                        <td class="filas"><b>Modificación Información</b></td>
+                                        <td class="filas"><b>Modificación Documentos</b></td>
                                     </tr>
                                 </thead>
                                 <tbody id="llenarTabla">
@@ -178,32 +186,56 @@
                     var datetime2=document.getElementById('datetime2').value;
                     var cotejoInfo=document.getElementById('cotejoInfo').value;
                     var estatusGen=document.getElementById('estatusGen').value;
+                    var usuarioInfo=document.getElementById("usuarioInfo").value;
+                    var usuarioDoc=document.getElementById("usuarioDoc").value;
+                    var indicador=0;
                     var where="where ";
                     var where2="where ";
+                    var where3="where ";
+
                     if(estatusGen!='-- Seleccione una opción --'){
                         where+="  sigaprep.vw_reporteador_estatus.perfil='"+estatusGen+"' and";
                         where2+="  sigaprep.vw_estatus_documentos.perfil='"+estatusGen+"' and";
+                        where3+="  sigaprep.vw_estatus_documentos_usuarios.perfil='"+estatusGen+"' and";
                     }
                     if(cotejoInfo!='-- Seleccione una opción --'){
                         where+="  sigaprep.vw_reporteador_estatus.descripcion='"+cotejoInfo+"' and";
                         where2+="  sigaprep.vw_estatus_documentos.descripcion='"+cotejoInfo+"' and";
+                        where3+="  sigaprep.vw_estatus_documentos_usuarios.descripcion='"+cotejoInfo+"' and";
                     }
                     
                     if(datetime1!='' && datetime2!=''){
                         where+="  sigaprep.vw_reporteador_estatus.fechaDictaminacion between '"+datetime1+"' and '"+datetime2+"' and";
                         where2+="  sigaprep.vw_estatus_documentos.fechaDictaminacion between '"+datetime1+"' and '"+datetime2+"' and";
+                        where3+="  sigaprep.vw_estatus_documentos_usuarios.fechaDictaminacion between '"+datetime1+"' and '"+datetime2+"' and";
+                    }
+
+                    if(usuarioInfo!='-- Seleccione una opción --'){
+                        where+="  sigaprep.vw_reporteador_estatus.modificacionInfoId='" + usuarioInfo + "' and";
+                        where2+="  sigaprep.vw_estatus_documentos.modificacionInfoId='" + usuarioInfo + "' and";
+                        where3+="  sigaprep.vw_estatus_documentos_usuarios.modificacionInfoId='" + usuarioInfo + "' and";
+                    }
+
+                    if(usuarioDoc!='-- Seleccione una opción --'){
+                        indicador=1;
+                        /* where3+="  sigaprep.vw_estatus_documentos_usuarios.usuariomodificodoc='" + usuarioDoc + "' and";*/
                     }
 
                     where+="  sigaprep.vw_reporteador_estatus.id > 0";
                     where2+="  sigaprep.vw_estatus_documentos.alumno_id > 0";
-                    console.log(where2);
+                    where3+="  sigaprep.vw_estatus_documentos_usuarios.id > 0";
+                    console.log(where3);
 
                     $('#example').DataTable().destroy();
                     $.ajax({
 
                         url : '<?php echo base_url(); ?>/index.php/BuscarController',
                         data : { 'funcion' : 'buscar',
-                        'where':where, 'where2':where2 },
+                        'where':where, 
+                        'where2':where2,
+                        'where3':where3,  
+                        'indicador':indicador,
+                        'usuarioDoc':usuarioDoc},
                         type : 'GET',
                         beforeSend : function(){
 
@@ -247,6 +279,7 @@
                                     {
                                         extend:    'csv',
                                         text:      'CSV ',
+                                        charset: 'UTF-8',
                                         titleAttr: 'Exportar a CSV',
                                         className: 'btn btn-success',
                                     },

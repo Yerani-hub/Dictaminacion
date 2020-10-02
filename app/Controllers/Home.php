@@ -4,6 +4,7 @@ use CodeIgniter\Controllers;
 use App\Models\EstatusGeneralModel;
 use App\Models\EstatusCotejoInfoModel;
 use App\Models\EstatusCotejoDocModel;
+use App\Models\UsuariosModel;
 use Config\Database;
 
 class Home extends BaseController
@@ -19,6 +20,9 @@ class Home extends BaseController
 
 		$estatusCotejoDocModel = new EstatusCotejoDocModel();
 		$data['estatusCotejoDoc'] = $estatusCotejoDocModel->getEstatus();
+
+		$usuariosModel = new UsuariosModel();
+		$data['usuariosModel'] = $usuariosModel->getUsuarios();
 
 		return view('dictamenes/index2', $data);
 	}

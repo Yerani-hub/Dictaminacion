@@ -13,35 +13,45 @@ class BuscarController extends BaseController
     {
         if(isset($_GET['funcion']) && !empty($_GET['funcion'])) {
             $funcion = $_GET['funcion'];
+            $indicador = $_GET['indicador'];
 
     //En función del parámetro que nos llegue ejecutamos una función u otra
             switch($funcion) {
                 case 'buscar': 
-                
-                $where = $_GET['where'];
-                $where2 = $_GET['where2'];
-                $db = Database::connect();
-
-                $query = $db->query("SELECT * FROM sigaprep.vw_reporteador_estatus ".$where);
-
-
-                $data = $query->getResultArray();
-
-                 $db2 = Database::connect();
-                $query2=$db2->query("SELECT * FROM sigaprep.vw_estatus_documentos ".$where2);
-
-
-                   $data2 = $query2->getResultArray();
 
                 $html="";
+                $html2="";
                 $validados='';
-                    $novalidados='';
-                    $pendientes='';
-                    $observaciones='';
+                $novalidados='';
+                $pendientes='';
+                $observaciones='';
+                $modificiondoc='';
 
+
+                $where = $_GET['where'];
+                $where2 = $_GET['where2'];
+                $where3 = $_GET['where3'];
+                $usuarioDoc =  $_GET['usuarioDoc'];
+
+                
+                $db = Database::connect();
+                $query = $db->query("SELECT * FROM sigaprep.vw_reporteador_estatus ".$where);
+                $data = $query->getResultArray();
+                $db->close();
+
+                $db2 = Database::connect();
+                $query2=$db2->query("SELECT * FROM sigaprep.vw_estatus_documentos ".$where2);
+                $data2 = $query2->getResultArray();
+                $db2->close();
+                
+                $db3 = Database::connect();
+                $query3=$db3->query("SELECT * FROM sigaprep.vw_estatus_documentos_usuarios ".$where3);
+                $data3 = $query3->getResultArray();
+                $db3->close();
+                $nombredoc="";
                 foreach ($data as $key) {
 
-                   foreach ($data2 as $key2) {
+                    foreach ($data2 as $key2) {
 
                     if($key2['alumno_id']==$key['id']){
 
@@ -56,9 +66,18 @@ class BuscarController extends BaseController
                     }
                    }
                   }
+                  foreach ($data3 as $key3) {
+                    if($key3['id']==$key['id']){
+                      $modificiondoc=$modificiondoc . $key3['contar'] . ' documentos cotejados por ' . $key3['usuarionombremodificodoc'] . '<br>';
+                      if( $key3['usuarionombremodificodoc']==$usuarioDoc){
+                    $nombredoc="si";
+                   }
+                   }
                    
+                  }
+
                    $html.='<tr>';
-                   $html.='<td class="filas">'.$key['id'].'</td>';
+                   $html.='<td class="filas">'.$key['usuario'].'</td>';
                    $html.='<td class="filas">'.$key['nombres'].' '. $key['apellidopaterno'] .' '.$key['apellidomaterno'].'</td>';
                    $html.='<td class="filas">'.$key['matricula'].'</td>';
                    $html.='<td class="filas">'.$key['curp'].'</td>';
@@ -66,7 +85,6 @@ class BuscarController extends BaseController
                    $html.='<td class="filas">'.$key['fechaDictaminacion'].'</td>';
                    $html.='<td class="filas">'.$key['perfil'].'</td>';
                    $html.='<td class="filas">'.$key['descripcion'].'</td>';
-
 
                    if($validados=='' && $novalidados=='' && $pendientes=='' && $observaciones==''){
                     $html.='<td class="filas">Sin documentos</td>';
@@ -76,13 +94,30 @@ class BuscarController extends BaseController
                     $novalidados='';
                     $pendientes='';
                     $observaciones='';
-                  }
+                   }
+
+                  $html.='<td class="filas">' . $key['modificacionInfoNombre'] . '</td>';
+                  $html.='<td class="filas">' . $modificiondoc . '</td>';
 
                 $html.='</tr>';
+
+                if($indicador==0){
+                  $html2.=$html;
+                }else{
+                  if($nombredoc=="si"){
+                    $html2.=$html;
+                  }
+                }
+                $html='';
+                $nombredoc="";
+                $modificiondoc='';
             }
 
-            return $html;
-            break;
+            return $html2;
+            
+           break;
+
+
             case 'funcion2': 
             $b -> accion2();
             break;
